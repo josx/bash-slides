@@ -28,8 +28,18 @@ for (( i = 0; i < NR_FORMATTING; i += 2 )); do
     SED_REPLACE+=" -e s/${FORMATTING[i]}/${FORMATTING[i + 1]}/g"
 done
 
-file="${1:-example}"
+SED_REPLACE_CMD="s/\`\(.*\)\`/\1/e"
+TMP_FILE="/tmp/file_replace_cmd"
 
+replace_commands() {
+    sed  ${SED_REPLACE_CMD} $file > $TMP_FILE
+    if [ $? == 0 ]; then
+        file=$TMP_FILE
+    fi
+}
+
+file="${1:-example}"
+replace_commands
 
 prepare_terminal() {
     # Get terminal values, clean terminal and remove cursor
@@ -46,6 +56,9 @@ restore_terminal() {
     tput cnorm
 }
 
+remove_tmp_files() {
+    rm $TMP_FILE
+}
 
 read_slides() {
     local i=0
@@ -369,5 +382,6 @@ while true; do
     fi
 done
 
+remove_tmp_files
 show_mouse_cursor
 restore_terminal
