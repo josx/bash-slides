@@ -41,6 +41,9 @@ replace_commands() {
 file="${1:-example}"
 replace_commands
 
+SHOW_IMAGE="kitty icat --silent"
+image_file="${2:-images}"
+
 prepare_terminal() {
     # Get terminal values, clean terminal and remove cursor
     rows=$( tput lines )
@@ -69,12 +72,14 @@ read_slides() {
     slide_raw_lines=()
     slide_clean_lines=()
     slide_formatted_lines=()
+    slide_images=()
 
     prepare_terminal
 
     readarray -t slide_raw_lines < "$file"
     readarray -t slide_clean_lines <<< "$( sed ${SED_DELETE} "$file" )"
     readarray -t slide_formatted_lines <<< "$( sed ${SED_REPLACE} "$file" )"
+    readarray -t slide_images < "$image_file"
 
     while IFS='' read -r line; do
         if [[ "$line" =~ ={40,} ]]; then
@@ -265,6 +270,13 @@ show_status() {
     printf " %s%s%${status_filler}s%s%s" "$( tput setaf 240 )" "$status_slide" " " "$status_time" "$( tput sgr0 )"
 }
 
+show_images() {
+    if [ "$slide" -le "${#slide_images[@]}" ]; then
+        if [ "${slide_images[slide-1]}" != "" ]; then
+            $($SHOW_IMAGE  ${slide_images[slide-1]})
+        fi
+    fi
+}
 
 hide_mouse_cursor() {
     if (( unclutter_installed )); then
@@ -296,6 +308,7 @@ fi
 
 slide=1  # Current slide
 status=0  # Status line
+images=0 # Images
 read_slides
 check_slides
 should_show="!$?"
@@ -312,6 +325,9 @@ while true; do
         show_slide
         if (( status )); then
             show_status
+        fi
+        if (( images )); then
+            show_images
         fi
     fi
 
@@ -353,6 +369,8 @@ while true; do
     # S
     elif [[ "$response" == "s" ]]; then
         (( status = ! status ))
+    elif [[ "$response" == "i" ]]; then
+        (( images = ! images ))
     # Q
     elif [[ "$response" == "q" ]]; then
         break
