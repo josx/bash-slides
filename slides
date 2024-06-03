@@ -32,7 +32,7 @@ SED_REPLACE_CMD="s/\`\(.*\)\`/\1/e"
 TMP_FILE="/tmp/file_replace_cmd"
 
 replace_commands() {
-    sed  ${SED_REPLACE_CMD} $file > $TMP_FILE
+    sed  ${SED_REPLACE_CMD} "$file" > $TMP_FILE
     if [ $? == 0 ]; then
         file=$TMP_FILE
     fi
